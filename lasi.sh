@@ -11,7 +11,7 @@ function Permission()
     if [ ${UID} != ${ROOT_UID} ]
     then
         echo "The script is not executed as root"
-        echo "try using sudo"
+        echo "try using sudo "
         exit ${E_NONROOT}
     fi
 }
