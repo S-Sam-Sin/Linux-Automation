@@ -55,6 +55,7 @@ Made by Sayid Sam-Sin | s_samsin@protonmail.com | https://github.com/S-Sam-Sin/L
     -h, --help          give this help list
 
 [suite]
+    -d, --development   install development app suite
     -o, --office        install office app suite
     -g, --graphics      install graphics app suite
     -u, --utilities     install graphics app suite"
@@ -87,6 +88,17 @@ then
     rm ./master-pdf-editor-4.1.30_qt5.amd64.deb
     exit
 
+### install Development app suite
+elif [ ${1} = "-i" -a ${2} = "-d" ] ||
+     [ ${1} = "-i" -a ${2} = "--development" ] ||
+     [ ${1} = "--install" -a ${2} = "-d" ] ||
+     [ ${1} = "--install" -a ${2} = "--development" ]
+then
+    declare -a CMD_DEV_KDE=('kdevelop' 'kdevelop-python' 'kdevelop-php' 'mysql-workbench' 'phpmyadmin' 'qtcreator')
+    Install_Suite ${CMD_DEV_KDE[@]}
+    exit
+
+
 ### install Graphic app suite
 elif [ ${1} = "-i" -a ${2} = "-g" ] ||
      [ ${1} = "-i" -a ${2} = "--graphics" ] ||
@@ -96,6 +108,7 @@ then
     declare -a CMD_GRAPHICS_KDE=('gwenview' 'krita' 'inkscape' 'sozi' 'ink-generator' 'kruler' 'scribus' 'scribus-template' 'digikam' 'kipi-plugins' 'peruse' 'blender' 'blender-ogrexml-1.9')
     Install_Suite ${CMD_GRAPHICS_KDE[@]}
     exit
+
 ### install Utilities app suite
 elif [ ${1} = "-i" -a ${2} = "-u" ] ||
      [ ${1} = "-i" -a ${2} = "--utilities" ] ||
