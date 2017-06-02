@@ -9,6 +9,7 @@ declare -a CMD_GRAPHICS_KDE=('gwenview' 'krita' 'inkscape' 'sozi' 'ink-generator
 declare -a CMD_UTILITIES_KDE=('rsibreak' 'kcharselect' 'kcalc' 'synergy' 'ark' 'filelight' 'gufw' 'dukto')
 
 
-# PPA
+# Third party PPA
 PPA_DUKTO_LIST=/etc/apt/sources.list.d/duktos.list
 PPA_DUKTO_ADD="echo 'deb http://download.opensuse.org/repositories/home:/colomboem/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/dukto.list"
+
