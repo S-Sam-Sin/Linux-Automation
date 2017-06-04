@@ -12,6 +12,11 @@ function __Clockwork()
         FULLTIME=$(date +%Y-%m-%d-%H:%M:%S)
 }
 
+function __PlaySound()
+{
+    mpv /usr/share/sounds/Oxygen-Im-Phone-Ring.ogg
+}
+
 function __PerceptionOfTime()
 {
     __Clockwork
@@ -23,8 +28,8 @@ function __PerceptionOfTime()
             i="${i}:00"
             if [ ${i} = ${TIME} ]
             then
-                # TODO play sound with Gstreamer backend
-                echo ${i}
+                __PlaySound
+                break
             fi
          done
     fi
@@ -34,12 +39,10 @@ function __PerceptionOfTime()
     then
         if [ ${TIME} = ${work_begin} -o ${TIME} = ${work_end}  ]
         then
-            # TODO play workday notifications sound
-            echo ${work_begin}-${work_end}
+            __PlaySound
         elif [ ${TIME} = ${work_lunch} ]
         then
-            # TODO play lunch notifications sound
-            echo ${work_lunch}
+            __PlaySound
         fi
     fi
 
@@ -54,13 +57,15 @@ function __PerceptionOfTime()
             if [ ${i} = ${DAY} ]
             then
                 CHECKTIME=true
+                break
             fi
         done
         ### if today is a listed day for shutdown then check the time for shutdown
         if [ ${CHECKTIME} = true -a ${TIME} = ${shutdown_time} ]
         then
             echo "System shutdown is activated"
-            shutdown
+            __PlaySound
+            shutdown -h now
         fi
     fi
 }
