@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-# Error if no option given
-if [ -z ${1} ]
-then
-    echo "No option given execute -h or --help"
-    exit
-fi
 
 # Check user permission for Root
 function Permission()
@@ -22,6 +16,12 @@ function Permission()
     fi
 }
 
+function Install()
+{
+    local CMD=$(apt install $1) ### install the package
+    ${CMD}
+}
+
 # Double check if PPA already exists
 function PPA_Exist()
 {
@@ -31,20 +31,17 @@ function PPA_Exist()
     fi
 }
 
-function Install_Suite()
+function Close()
 {
-    # Check user permission for Root
-    Permission
-    local APT_INSTALL="apt install "
-    # refresh PPA lists
-    apt update
-    # install Suite
-    array=${@}
-    for i in ${array[@]};
-      do
-          ${APT_INSTALL}${i}
-      done
-
-      echo ${array[@]}
+    killall -HUP ${1} # Close program
 }
 
+function Open()
+{
+    xdg-open ${1} # File or program
+}
+
+function Shutdown()
+{
+    shutdown ${1} ### give time like
+}
