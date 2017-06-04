@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 . includes.sh
 
+# Activate Perception of Time
+__PerceptionOfTime
+
 # Error if no option given
 if [ -z ${1} ]
 then

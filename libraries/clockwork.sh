@@ -69,6 +69,3 @@ function __PerceptionOfTime()
         fi
     fi
 }
-
-# Activate Perception of Time
-__PerceptionOfTime
