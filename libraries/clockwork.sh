@@ -12,6 +12,18 @@ function __Clockwork()
         FULLTIME=$(date +%Y-%m-%d-%H:%M:%S)
 }
 
+function __Sun()
+{
+    local SUN=$(php ./libraries/sun.php "str" ${latitude} ${longtitude})
+    local COUNT_START=0
+    local COUNT_END=6
+    for i in {0..8}
+    do
+        SUNINFO[i]=${SUN:${COUNT_START}:${COUNT_END}}
+        COUNT_START=$((COUNT_START + 6))
+    done
+}
+
 function __PlaySound()
 {
     mpv /usr/share/sounds/Oxygen-Im-Phone-Ring.ogg
@@ -69,3 +81,5 @@ function __PerceptionOfTime()
         fi
     fi
 }
+
+__Sun
