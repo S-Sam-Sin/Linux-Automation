@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
-. includes.sh
+# Include libraries
+. kintel_settings.cfg
+. kintel_spokenwords.sh
+. kintel_help.sh
+. kintel_system.sh
+. kintel_power.sh
 # Error if no option given
-if [ -z ${1} ]
-then
-    echo "No option given execute -h or --help"
-    exit
-fi
+#if [ -z ${1} ]
+#then
+#    echo "No option given execute -h or --help"
+#    exit
+#fi
 
 ### Help section
-if [ ${1} = "-h" ] || [ ${1} = "--help" ]
-then
-    Help
-fi
+#if [ ${1} = "-h" ] || [ ${1} = "--help" ]
+#then
+#    Help
+#fi
 
 function __Clockwork()
 {
@@ -27,7 +32,7 @@ function __Clockwork()
 
 function __Sun()
 {
-    local SUN=$(php ./libraries/sun.php "str" ${latitude} ${longtitude})
+    local SUN=$(php ./sun.php "str" ${latitude} ${longtitude})
     local COUNT_START=0
     local COUNT_END=6
     for i in {0..8}
@@ -48,7 +53,7 @@ function __PerceptionOfTime()
             i="${i}:00"
             if [ ${i} = ${TIME} ]
             then
-                __SpokenWords "It+is+${i:0:2}+o'clock"
+                __SpokenWords "no-voice" "It+is+${i:0:2}+o'clock"
                 break
             fi
          done
@@ -59,10 +64,10 @@ function __PerceptionOfTime()
     then
         if [ ${TIME} = ${work_begin} -o ${TIME} = ${work_end}  ]
         then
-            __PlaySound
+            __SpokenWords "test"
         elif [ ${TIME} = ${work_lunch} ]
         then
-            __SpokenWords "It+is+time+for+some+lunch"
+            __SpokenWords "no-voice" "It+is+time+for+some+lunch"
         fi
     fi
 
@@ -84,7 +89,7 @@ function __PerceptionOfTime()
         if [ ${CHECKTIME} = true -a ${TIME} = ${shutdown_time} ]
         then
             echo "System shutdown is activated"
-            __PlaySound
+             __SpokenWords "no-voice" "System+is+shutting+down"
             shutdown -h now
         fi
     fi
