@@ -5,24 +5,14 @@
 . kintel_help.sh
 . kintel_system.sh
 . kintel_power.sh
-# Error if no option given
-#if [ -z ${1} ]
-#then
-#    echo "No option given execute -h or --help"
-#    exit
-#fi
-
-### Help section
-#if [ ${1} = "-h" ] || [ ${1} = "--help" ]
-#then
-#    Help
-#fi
 
 function __Clockwork()
 {
         YEAR=$(date +%Y)
         MONTH=$(date +%m)
-        DAY=$(date +%u)
+        DAY=$(date +%d)
+        DATELEADING=$(date +%Y/%m/%d)
+        DATE=$(date +%Y/%-m/%-d)
         HOUR=$(date +%H)
         MINUTE=$(date +%M)
         TIME=$(date +%H:%M)
@@ -32,14 +22,124 @@ function __Clockwork()
 
 function __Sun()
 {
+    ### ${SUN} order :
+    # sunrise, sunset, transit, civil_twilight_begin, civil_twilight_end,
+    # nautical_twilight_begin, nautical_twilight_end,
+    # astronomical_twilight_begin, astronomical_twilight_end
     local SUN=$(php ./sun.php "str" ${latitude} ${longtitude})
-    local COUNT_START=0
+    local COUNT_START=${1}
     local COUNT_END=6
-    for i in {0..8}
-    do
-        SUNINFO[i]=${SUN:${COUNT_START}:${COUNT_END}}
-        COUNT_START=$((COUNT_START + 6))
-    done
+    ASTRONOMY=${SUN:${COUNT_START}:${COUNT_END}}
+}
+
+function __Moon()
+{
+    local MOON=$(python3 ./moon.py ${1} ${DATE})
+    IFS=' ' read -ra MOONINFO <<< "$MOON"
+
+    MOONDATE=${MOONINFO[0]}
+    MOONTIME=${MOONINFO[1]:0:5} ### remove seconds
+}
+
+function __Astronomy()
+{
+    local INFO
+    # TODO make unique events for different astronomical events
+    # TODO play different sounds for each astronomical events
+    # TODO reconstruct script to remove duplicate if statements
+    case ${1} in
+        "sunrise")
+            __Sun 0
+            if [ ${ASTRONOMY} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+            ;;
+        "sunset")
+            __Sun 6
+            if [ ${ASTRONOMY} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+            ;;
+        "full moon")
+            __Moon "full"
+            if [ ${MOONDATE} = ${DATE} -a ${MOONTIME} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+        ;;
+        "new moon")
+            __Moon "new"
+             if [ ${MOONDATE} = ${DATE} -a ${MOONTIME} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+        ;;
+        "first quarter moon")
+            __Moon "first_quarter"
+             if [ ${MOONDATE} = ${DATE} -a ${MOONTIME} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+        ;;
+        "last quarter moon")
+            __Moon "last_quarter"
+             if [ ${MOONDATE} = ${DATE} -a ${MOONTIME} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+        ;;
+        "transit")
+            __Sun 12
+            if [ ${ASTRONOMY} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+            ;;
+        "civil begin")
+            __Sun 18
+            if [ ${ASTRONOMY} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+            ;;
+        "civil end")
+            __Sun 24
+            if [ ${ASTRONOMY} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+            ;;
+        "nautical begin")
+            __Sun 30
+            if [ ${ASTRONOMY} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+            ;;
+        "nautical end")
+            __Sun 36
+            if [ ${ASTRONOMY} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+            ;;
+        "astronomical begin")
+            __Sun 42
+            if [ ${ASTRONOMY} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+            ;;
+        "astronomical end")
+            __Sun 48
+            if [ ${ASTRONOMY} = ${TIME} ]
+            then
+                __SpokenWords "no-voice" ""
+            fi
+            ;;
+        esac
 }
 
 function __PerceptionOfTime()
@@ -97,3 +197,22 @@ function __PerceptionOfTime()
 
 # Activate Perception of Time
 __PerceptionOfTime
+# Activate Astronomy
+if [ ${astronomical_notification} ]
+then
+    __Astronomy "sunrise"
+    __Astronomy "sunset"
+    __Astronomy "full moon"
+    __Astronomy "new moon"
+    __Astronomy "first quarter moon"
+    __Astronomy "last quarter moon"
+    __Astronomy "transit"
+    __Astronomy "civil begin"
+    __Astronomy "civil end"
+    __Astronomy "nautical begin"
+    __Astronomy "nautical end"
+    __Astronomy "astronomical begin"
+    __Astronomy "astronomical end"
+else
+    echo "Astronomical notification are turned off in kintel_settings.cfg"
+fi
