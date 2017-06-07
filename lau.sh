@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 # Include libraries
-. kintel_settings.cfg
-. kintel_spokenwords.sh
-. kintel_help.sh
-. kintel_system.sh
-. kintel_power.sh
+. lau_settings.cfg
+. lau_spokenwords.sh
+. lau_help.sh
+. lau_system.sh
+. lau_power.sh
 
 function __Clockwork()
 {
-        YEAR=$(date +%Y)
-        MONTH=$(date +%m)
-        DAY=$(date +%d)
-        DATELEADING=$(date +%Y/%m/%d)
-        DATE=$(date +%Y/%-m/%-d)
-        HOUR=$(date +%H)
-        MINUTE=$(date +%M)
-        TIME=$(date +%H:%M)
-        SECOND=$(date +%S)
-        FULLTIME=$(date +%Y-%m-%d-%H:%M:%S)
+    YEAR=$(date +%Y)
+    MONTH=$(date +%m)
+    DAY=$(date +%d)
+    DATELEADING=$(date +%Y/%m/%d)
+    DATE=$(date +%Y/%-m/%-d)
+    HOUR=$(date +%H)
+    MINUTE=$(date +%M)
+    TIME=$(date +%H:%M)
+    SECOND=$(date +%S)
+    FULLTIME=$(date +%Y-%m-%d-%H:%M:%S)
 }
 
 function __Sun()
@@ -27,9 +27,13 @@ function __Sun()
     # nautical_twilight_begin, nautical_twilight_end,
     # astronomical_twilight_begin, astronomical_twilight_end
     local SUN=$(php ./sun.php "str" ${latitude} ${longtitude})
-    local COUNT_START=${1}
-    local COUNT_END=6
-    ASTRONOMY=${SUN:${COUNT_START}:${COUNT_END}}
+    IFS=' ' read -ra SUNINFO <<< "$SUN"
+    ASTROTIME=${SUNINFO[0]}
+
+    if [ ${ASTROTIME} = ${TIME} ]
+    then
+        __SpokenWords "sun" ${1}
+    fi
 }
 
 function __Moon()
@@ -39,6 +43,11 @@ function __Moon()
 
     MOONDATE=${MOONINFO[0]}
     MOONTIME=${MOONINFO[1]:0:5} ### remove seconds
+
+    if [ ${MOONDATE} = ${DATE} -a ${MOONTIME} = ${TIME} ]
+    then
+        __SpokenWords "moon" ${1}
+    fi
 }
 
 function __Astronomy()
@@ -49,12 +58,7 @@ function __Astronomy()
     # TODO reconstruct script to remove duplicate if statements
     case ${1} in
         "sunrise")
-            __Sun 0
-            if [ ${ASTRONOMY} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-            ;;
+            __Sun 0 ;;
         "sunset")
             __Sun 6
             if [ ${ASTRONOMY} = ${TIME} ]
@@ -63,33 +67,13 @@ function __Astronomy()
             fi
             ;;
         "full moon")
-            __Moon "full"
-            if [ ${MOONDATE} = ${DATE} -a ${MOONTIME} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-        ;;
+            __Moon "full";;
         "new moon")
-            __Moon "new"
-             if [ ${MOONDATE} = ${DATE} -a ${MOONTIME} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-        ;;
+            __Moon "new" ;;
         "first quarter moon")
-            __Moon "first_quarter"
-             if [ ${MOONDATE} = ${DATE} -a ${MOONTIME} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-        ;;
+            __Moon "first_quarter";;
         "last quarter moon")
-            __Moon "last_quarter"
-             if [ ${MOONDATE} = ${DATE} -a ${MOONTIME} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-        ;;
+            __Moon "last_quarter";;
         "transit")
             __Sun 12
             if [ ${ASTRONOMY} = ${TIME} ]
