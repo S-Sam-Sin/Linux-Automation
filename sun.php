@@ -4,6 +4,7 @@ class Sun
 {
     private $_return;
     private $_sun;
+    private $_bash;
 
     public function __construct(string $return, int $latitude, int $longtitude)
     {
@@ -20,13 +21,14 @@ class Sun
             $this->_return = SUNFUNCS_RET_TIMESTAMP; ### Return as timestamp
         }
 
-        $this->_sun = date_sun_info(strtotime(date("Y-d-m")), $latitude, $longtitude);
+        $this->_sun = date_sun_info(strtotime(date("H:i:s")), $latitude, $longtitude);
+        $count = 0;
         foreach ($this->_sun as $info)
         {
             # remove seconds
-            echo substr( date("H:i:s",$info), 0, 5)." ";
+            echo $this->_bash[$count] = substr( date("H:i:s",$info), 0, 5)." ";
+            $count++;
         }
-
     }
 
     public function __destruct()

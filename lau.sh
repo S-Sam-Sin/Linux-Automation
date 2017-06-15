@@ -6,18 +6,65 @@
 . lau_system.sh
 . lau_power.sh
 
-function __Clockwork()
+
+YEAR=$(date +%Y)
+MONTH=$(date +%m)
+DAY=$(date +%d)
+DATELEADING=$(date +%Y/%m/%d)
+DATE=$(date +%Y/%-m/%-d)
+HOUR=$(date +%H)
+MINUTE=$(date +%M)
+TIME=$(date +%H:%M)
+SECOND=$(date +%S)
+FULLTIME=$(date +%Y-%m-%d-%H:%M:%S)
+
+function __Bell()
 {
-    YEAR=$(date +%Y)
-    MONTH=$(date +%m)
-    DAY=$(date +%d)
-    DATELEADING=$(date +%Y/%m/%d)
-    DATE=$(date +%Y/%-m/%-d)
-    HOUR=$(date +%H)
-    MINUTE=$(date +%M)
-    TIME=$(date +%H:%M)
-    SECOND=$(date +%S)
-    FULLTIME=$(date +%Y-%m-%d-%H:%M:%S)
+    ### ring the bel every hour
+    for i in {0..23}
+    do
+        i="${i}:00"
+        if [ ${i} = ${TIME} ]
+        then
+            __SpokenWords "off" "It+is+${i:0:2}+o'clock"
+            break
+        fi
+    done
+}
+
+function __WorkDay()
+{
+    ### workday notifications
+    if [ ${TIME} = ${work_begin} -o ${TIME} = ${work_end}  ]
+    then
+         __SpokenWords "off"
+    elif [ ${TIME} = ${work_lunch} ]
+    then
+        __SpokenWords "off" "It+is+time+for+some+lunch"
+    fi
+}
+
+function __Rest()
+{
+    ### Automatic shutdown
+    local CHECKTIME=false
+    ### loop through al days from the settings.cfg
+    for i in ${shutdown_days[@]}
+    do
+        ### if today is a day listed for shutdown
+        if [ ${i} = ${DAY} ]
+        then
+            CHECKTIME=true
+            break
+        fi
+    done
+    ### if today is a listed day for shutdown then check the time for shutdown
+    if [ ${CHECKTIME} = true -a ${TIME} = ${shutdown_time} ]
+    then
+        echo "System shutdown is activated"
+        __SpokenWords "off" "System+is+shutting+down"
+        shutdown -h now
+    fi
 }
 
 function __Sun()
@@ -28,12 +75,15 @@ function __Sun()
     # astronomical_twilight_begin, astronomical_twilight_end
     local SUN=$(php ./sun.php "str" ${latitude} ${longtitude})
     IFS=' ' read -ra SUNINFO <<< "$SUN"
-    ASTROTIME=${SUNINFO[0]}
-
-    if [ ${ASTROTIME} = ${TIME} ]
-    then
-        __SpokenWords "sun" ${1}
-    fi
+    echo ${SUNINFO}
+    for i in ${SUNINFO[@]}
+    do
+        if [ ${i} = ${TIME} ]
+        then
+            __SpokenWords "sun" ${1}
+            break
+        fi
+    done
 }
 
 function __Moon()
@@ -50,153 +100,30 @@ function __Moon()
     fi
 }
 
-function __Astronomy()
-{
-    local INFO
-    # TODO make unique events for different astronomical events
-    # TODO play different sounds for each astronomical events
-    # TODO reconstruct script to remove duplicate if statements
-    case ${1} in
-        "sunrise")
-            __Sun 0 ;;
-        "sunset")
-            __Sun 6
-            if [ ${ASTRONOMY} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-            ;;
-        "full moon")
-            __Moon "full";;
-        "new moon")
-            __Moon "new" ;;
-        "first quarter moon")
-            __Moon "first_quarter";;
-        "last quarter moon")
-            __Moon "last_quarter";;
-        "transit")
-            __Sun 12
-            if [ ${ASTRONOMY} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-            ;;
-        "civil begin")
-            __Sun 18
-            if [ ${ASTRONOMY} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-            ;;
-        "civil end")
-            __Sun 24
-            if [ ${ASTRONOMY} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-            ;;
-        "nautical begin")
-            __Sun 30
-            if [ ${ASTRONOMY} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-            ;;
-        "nautical end")
-            __Sun 36
-            if [ ${ASTRONOMY} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-            ;;
-        "astronomical begin")
-            __Sun 42
-            if [ ${ASTRONOMY} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-            ;;
-        "astronomical end")
-            __Sun 48
-            if [ ${ASTRONOMY} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" ""
-            fi
-            ;;
-        esac
-}
 
-function __PerceptionOfTime()
-{
-    __Clockwork
-    ### ring the bel every hour
-    if [ ${every_hour_notification} ]
-    then
-         for i in {0..23}
-         do
-            i="${i}:00"
-            if [ ${i} = ${TIME} ]
-            then
-                __SpokenWords "no-voice" "It+is+${i:0:2}+o'clock"
-                break
-            fi
-         done
-    fi
+if [ ${every_hour_notification} ]
+then
+    __Bell
+fi
 
-    ### workday notifications
-    if [ ${workday_notification} ]
-    then
-        if [ ${TIME} = ${work_begin} -o ${TIME} = ${work_end}  ]
-        then
-            __SpokenWords "test"
-        elif [ ${TIME} = ${work_lunch} ]
-        then
-            __SpokenWords "no-voice" "It+is+time+for+some+lunch"
-        fi
-    fi
+if [ ${workday_notification} ]
+then
+    __WorkDay
+fi
 
-    ### Automatic shutdown
-    if [ ${auto_shutdown} ]
-    then
-        local CHECKTIME=false
-        ### loop through al days from the settings.cfg
-        for i in ${shutdown_days[@]}
-        do
-            ### if today is a day listed for shutdown
-            if [ ${i} = ${DAY} ]
-            then
-                CHECKTIME=true
-                break
-            fi
-        done
-        ### if today is a listed day for shutdown then check the time for shutdown
-        if [ ${CHECKTIME} = true -a ${TIME} = ${shutdown_time} ]
-        then
-            echo "System shutdown is activated"
-             __SpokenWords "no-voice" "System+is+shutting+down"
-            shutdown -h now
-        fi
-    fi
-}
-
-# Activate Perception of Time
-__PerceptionOfTime
 # Activate Astronomy
 if [ ${astronomical_notification} ]
 then
-    __Astronomy "sunrise"
-    __Astronomy "sunset"
-    __Astronomy "full moon"
-    __Astronomy "new moon"
-    __Astronomy "first quarter moon"
-    __Astronomy "last quarter moon"
-    __Astronomy "transit"
-    __Astronomy "civil begin"
-    __Astronomy "civil end"
-    __Astronomy "nautical begin"
-    __Astronomy "nautical end"
-    __Astronomy "astronomical begin"
-    __Astronomy "astronomical end"
+    __Sun
+    __Moon "full"
+    __Moon "new"
+    __Moon "first_quarter"
+    __Moon "last_quarter"
 else
-    echo "Astronomical notification are turned off in kintel_settings.cfg"
+    echo "Astronomical notification are turned off in lau_settings.cfg"
+fi
+
+if [ ${auto_shutdown} ]
+then
+    __Rest
 fi
